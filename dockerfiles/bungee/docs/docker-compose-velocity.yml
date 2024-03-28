@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  mc:
+    image: itzg/minecraft-server
+    environment:
+      EULA: "TRUE"
+      ONLINE_MODE: "FALSE"
+  proxy:
+    image: itzg/bungeecord
+    environment:
+      TYPE: VELOCITY
+      DEBUG: "false"
+      ENABLE_RCON: "true"
+    ports:
+      - "25565:25577"
+    volumes:
+      - ./config.yml:/config/config.yml
+      - proxy:/server
+
+volumes:
+  proxy: {}

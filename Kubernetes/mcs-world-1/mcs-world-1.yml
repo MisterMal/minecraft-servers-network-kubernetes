@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcs-world-1
+  labels:
+    app: mcs-world-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcs-world-1
+  template:
+    metadata:
+      labels:
+        app: mcs-world-1
+    spec:
+      volumes:
+        - name: mcs-world-1-data
+          persistentVolumeClaim:
+            claimName: mcs-world-1-data-pvc
+      containers:
+        - name: mcs-world-1
+          image: misterwm/mcs-world-1:latest
+          resources:
+            limits:
+              memory: 2.5Gi
+            requests:
+              memory: 1.7Mi
+              cpu: "0.15"
+          env:
+            - name: EULA
+              value: 'TRUE'
+            - name: MODE
+              value: survival
+            - name: ONLINE_MODE
+              value: 'FALSE'
+            - name: TYPE
+              value: SPIGOT
+          ports:
+            - containerPort: 25565
+              name: mcs-world-1
+          volumeMounts:
+            - name: mcs-world-1-data
+              mountPath: /data/world
+          readinessProbe:
+            exec:
+              command:
+                - mc-monitor
+                - status
+                - --use-mc-utils
+                - --host
+                - 127.0.0.1
+                - --port
+                - "25565"
+            initialDelaySeconds: 120
+            periodSeconds: 60
+          livenessProbe:
+            exec:
+              command:
+                - mc-monitor
+                - status
+                - --use-mc-utils
+                - --host
+                - 127.0.0.1
+                - --port
+                - "25565"
+            initialDelaySeconds: 120
+            periodSeconds: 60

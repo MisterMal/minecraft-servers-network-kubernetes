@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lobby
+  namespace: default
+  labels:
+    app: lobby
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lobby
+  template:
+    metadata:
+      labels:
+        app: lobby
+    spec:
+      volumes:
+        - name: lobby-data
+          persistentVolumeClaim:
+            claimName: lobby-data-pvc
+      containers:
+        - name: lobby
+          image: misterwm/lobby:latest
+          resources:
+            limits:
+              memory: 2.5Gi
+            requests:
+              memory: 1.7Gi
+              cpu: "0.15"
+          env:
+            - name: MODE
+              value: survival
+            - name: ONLINE_MODE
+              value: 'FALSE'
+            - name: EULA
+              value: 'TRUE'
+            - name: TYPE
+              value: SPIGOT
+          ports:
+            - containerPort: 25565
+              name: lobby
+          volumeMounts:
+            - name: lobby-data
+              mountPath: /data/world
+          readinessProbe:
+            exec:
+              command:
+                - mc-monitor
+                - status
+                - --use-mc-utils
+                - --host
+                - 127.0.0.1
+                - --port
+                - "25565"
+            initialDelaySeconds: 120
+            periodSeconds: 60
+          livenessProbe:
+            exec:
+              command:
+                - mc-monitor
+                - status
+                - --use-mc-utils
+                - --host
+                - 127.0.0.1
+                - --port
+                - "25565"
+            initialDelaySeconds: 120
+            periodSeconds: 60

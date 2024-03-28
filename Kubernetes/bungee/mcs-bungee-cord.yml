@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcs-bungee-cord
+  namespace: default
+  labels:
+    app: mcs-bungee-cord
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcs-bungee-cord
+  template:
+    metadata:
+      labels:
+        app: mcs-bungee-cord
+    spec:
+      containers:
+        - name: mcs-bungee-cord
+          image: misterwm/bungee-itzg-base:latest
+          workingDir: /server
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 1.5Gi
+            requests:
+              memory: 500Mi
+              cpu: "0.1"
+          env:
+            - name: ONLINE_MODE
+              value: 'FALSE'
+            - name: EULA
+              value: 'TRUE'
+          ports:
+            - containerPort: 25565
+              name: bungeecord
+          readinessProbe:
+            exec:
+              command:
+                - mc-monitor
+                - status
+                - --host
+                - 127.0.0.1
+                - --port
+                - "25577"
+            initialDelaySeconds: 120
+            periodSeconds: 60
+          livenessProbe:
+            exec:
+              command:
+                - mc-monitor
+                - status
+                - --host
+                - 127.0.0.1
+                - --port
+                - "25577"
+            initialDelaySeconds: 120
+            periodSeconds: 60
